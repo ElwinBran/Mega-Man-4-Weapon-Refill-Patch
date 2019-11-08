@@ -1,0 +1,48 @@
+LOC    OBJ              LINE   SOURCE
+
+                        1      ; Specify we are using the b00000111 pattern ($07) for the bank switch
+07C697 A907             2      LDA #$07 
+                        3      ; Store this in the Memory Bank controller register
+07C699 8D0080           4      STA $8000
+                        5      ; Specify that Bank $00 has to be loaded
+07C69C A900             6      LDA #$00
+                        7      ; Store this value into the the Memory Bank selection register
+07C69E 8D0180           8      STA $8001
+                        9      ; Continue execution at the free space that has just been loaded via bank switch
+07C6A1 4CA0AA           10     JMP $AAA0
+                        11     ; Padding
+07C6A4 EA               12     NOP
+----
+                        13     ; The following section appears at 0xAAA0 during runtime after the bank switch
+                        14     ; 9C is the maximum health value in Mega Man 4 (original code)
+000AB0 A99C             15     LDA #$9C
+                        16     ; Write to health offset (original code)
+000AB2 85B0             17     STA $00B0
+                        18     ; Load the offset difference between lowest and highest weapon energy in X. BD - B1 = 0C
+000AB4 A20C             19     LDX #$0C
+                        20     ; (loop start: $AAA6 at runtime) first load the current weapon energy of the current weapon (selected by $B1 + X, thus BD is first then BC etc.)
+000AB6 B5B1             21     LDA $B1,X
+                        22     ; If the weapon is not acquired (indicated by most significat bit, also the sign bit on the 6502) then skip refill steps (next 4 bytes).
+000AB8 1004             23     BPL $AAAE
+                        24     ; Prepare max weapon energy value
+000ABA A99C             25     LDA #$9C
+                        26     ; Replace the current selected weapon value with the maximum, effectively refilling.
+000ABC 95B1             27     STA $B1,X
+                        28     ; The $AAAE target at runtime: X = X - 1. The next weapon is selected.
+000ABE CA               29     DEX
+                        30     ; Unless X is negative (remember B1 + -1 = B0 which is not a weapon offset) loop back to loop start
+000ABF 10F5             31     BPL $AAA6
+                        32     ; Loop ended: Restore X register to zero
+000AC1 A200             33     LDX #$00
+                        34     ; (orginal code that was replaced with the bank switch code)
+000AC3 A522             35     LDA $0022
+000AC5 C90E             36     CMP #$0E
+                        37     ; (tweaked original code; would normally branch to C6C7)
+000AC7 D007             38     BNE $AAC0
+000AC9 A5F9             39     LDA $00F9
+000ACB C909             40     CMP #$09
+                        41     ; Jump back to the orginal code 
+000ACD 4C95C6           42     JMP $C695
+                        43     ; replaces the branch of the orginal code
+000AD0 4CC7C6           44     JMP $C6C7
+
