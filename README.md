@@ -1,5 +1,4 @@
 # Mega Man 4 Weapon Refill Patch
-\[This description is still work in progress]
 This patch for Mega Man 4 makes weapon energy refill upon death in the whole game. 
 A detailed description can be found [on the RomHacking page of this hack](http://www.romhacking.net/hacks/4720/), as well as an alternative download link.
 In this README you will find further information on how this patch was made and reference material.
